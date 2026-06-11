@@ -28,9 +28,6 @@ infrastructure/
   security, chat-history).
 - recon: reid-worker, reid-db-handler, reid-analytics-backend, mongodb, flaresolverr.
 
-Not included (internal-only or out of scope): the API-key gate, Traefik ingress objects,
-and any GitOps controller wiring.
-
 ## Placeholders to substitute
 
 - Image: `localhost:5000/<svc>:latest` -> point at your registry/tag.
