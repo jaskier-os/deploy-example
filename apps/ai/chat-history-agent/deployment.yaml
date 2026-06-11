@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-history-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-history-agent
+  template:
+    metadata:
+      labels:
+        app: chat-history-agent
+    spec:
+      containers:
+      - name: chat-history-agent
+        image: localhost:5000/chat-history-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10014
+        env:
+        - name: PORT
+          value: "10014"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: MONGODB_URI
+          value: "mongodb://mongodb-0.mongodb.recon.svc.cluster.local:27017/repository_reid?replicaSet=rs0"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: MODEL
+          value: "sonnet"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10014
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10014
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "128Mi"
+          limits:
+            memory: "512Mi"

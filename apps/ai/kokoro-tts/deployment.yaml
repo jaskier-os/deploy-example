@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kokoro-tts
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kokoro-tts
+  template:
+    metadata:
+      labels:
+        app: kokoro-tts
+    spec:
+      containers:
+      - name: kokoro-tts
+        image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+        ports:
+        - containerPort: 8880
+        env:
+        - name: DEVICE
+          value: "cpu"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8880
+          failureThreshold: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8880
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8880
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "2Gi"
+          limits:
+            memory: "4Gi"

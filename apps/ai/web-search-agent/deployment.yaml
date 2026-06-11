@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-search-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-search-agent
+  template:
+    metadata:
+      labels:
+        app: web-search-agent
+    spec:
+      containers:
+      - name: web-search-agent
+        image: localhost:5000/web-search-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10004
+        env:
+        - name: PORT
+          value: "10004"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: MCP_URL
+          value: "http://mcp-web-search.ai.svc.cluster.local:10002"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: UNPAYWALL_EMAIL
+          value: "you@example.com"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        resources:
+          requests:
+            memory: "128Mi"

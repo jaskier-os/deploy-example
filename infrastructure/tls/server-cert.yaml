@@ -1,0 +1,91 @@
+# Public cert (repository-ca) — only public IP
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server-tls-cert
+  namespace: ai
+spec:
+  secretName: server-tls-cert
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "EXTERNAL_HOST"
+  duration: 8760h
+  renewBefore: 720h
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server-tls-cert
+  namespace: kube-system
+spec:
+  secretName: server-tls-cert
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "EXTERNAL_HOST"
+  duration: 8760h
+  renewBefore: 720h
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server-tls-cert
+  namespace: recon
+spec:
+  secretName: server-tls-cert
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "EXTERNAL_HOST"
+  duration: 8760h
+  renewBefore: 720h
+---
+# VPN cert (vpn-ca) — only VPN IP
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vpn-tls-cert
+  namespace: ai
+spec:
+  secretName: vpn-tls-cert
+  issuerRef:
+    name: vpn-ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "GITLAB_HOST"
+  duration: 8760h
+  renewBefore: 720h
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vpn-tls-cert
+  namespace: kube-system
+spec:
+  secretName: vpn-tls-cert
+  issuerRef:
+    name: vpn-ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "GITLAB_HOST"
+  duration: 8760h
+  renewBefore: 720h
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vpn-tls-cert
+  namespace: recon
+spec:
+  secretName: vpn-tls-cert
+  issuerRef:
+    name: vpn-ca-issuer
+    kind: ClusterIssuer
+  ipAddresses:
+    - "GITLAB_HOST"
+  duration: 8760h
+  renewBefore: 720h

@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: communicator
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: communicator
+  template:
+    metadata:
+      labels:
+        app: communicator
+    spec:
+      volumes:
+      - name: claude-credentials
+        hostPath:
+          path: /root/.claude
+          type: Directory
+      # SSH key + known_hosts for the OAuth-refresh side channel.
+      # The communicator's claude_credentials.js shells out to `ssh -i ...
+      # root@<host> /root/refresh-token-now.sh` whenever it detects the
+      # access token has expired. authorized_keys on the host pins the key
+      # to that one script via forced-command, so even if the key leaks
+      # the worst-case action is "force a token refresh".
+      - name: refresh-ssh
+        secret:
+          secretName: communicator-refresh-ssh
+          defaultMode: 0400
+      containers:
+      - name: communicator
+        image: localhost:5000/communicator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10000
+        volumeMounts:
+        - name: claude-credentials
+          mountPath: /root/.claude
+          readOnly: false
+        - name: refresh-ssh
+          mountPath: /etc/refresh-ssh
+          readOnly: true
+        env:
+        - name: PORT
+          value: "10000"
+        - name: LLM_PROVIDER
+          value: "gateway"
+        - name: REQUEST_TIMEOUT_MS
+          value: "1200000"
+        - name: ENABLE_STREAMING
+          value: "false"
+        - name: CUSTOM_API_HEADERS
+          value: "{}"
+        - name: CORS_ORIGINS
+          value: "*"
+        # OAuth-refresh side channel. claude_credentials.js spawns
+        # `ssh -i $REFRESH_SSH_KEY -p $REFRESH_SSH_PORT $REFRESH_SSH_USER@$REFRESH_SSH_HOST`
+        # with no command -- the host's authorized_keys forces it to
+        # `/root/refresh-token-now.sh`, which runs `claude -p test` and
+        # writes new credentials into the bind-mounted /root/.claude.
+        - name: REFRESH_SSH_HOST
+          value: "EXTERNAL_HOST"
+        - name: REFRESH_SSH_PORT
+          value: "41922"
+        - name: REFRESH_SSH_USER
+          value: "root"
+        - name: REFRESH_SSH_KEY
+          value: "/etc/refresh-ssh/id_ed25519"
+        - name: REFRESH_SSH_KNOWN_HOSTS
+          value: "/etc/refresh-ssh/known_hosts"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 10000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 10000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "128Mi"
+          limits:
+            memory: "512Mi"

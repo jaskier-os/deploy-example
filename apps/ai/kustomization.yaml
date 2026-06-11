@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - communicator/deployment.yaml
+  - communicator/service.yaml
+  - orchestrator/deployment.yaml
+  - orchestrator/service.yaml
+  - kokoro-tts/deployment.yaml
+  - kokoro-tts/service.yaml
+  - piper-tts/deployment.yaml
+  - piper-tts/service.yaml
+  - teratts-tts/deployment.yaml
+  - teratts-tts/service.yaml
+  - ocr/deployment.yaml
+  - ocr/service.yaml
+  - translator/deployment.yaml
+  - translator/service.yaml
+  - vision-agent/deployment.yaml
+  - vision-agent/service.yaml
+  - web-search-agent/deployment.yaml
+  - web-search-agent/service.yaml
+  - mcp-web-search/deployment.yaml
+  - mcp-web-search/service.yaml
+  - reid-agent/deployment.yaml
+  - reid-agent/service.yaml
+  - clickup-agent/deployment.yaml
+  - security-agent/deployment.yaml
+  - chat-history-agent/deployment.yaml
+  - chat-history-agent/service.yaml
+  - anthropic-stt/deployment.yaml
+  - anthropic-stt/service.yaml

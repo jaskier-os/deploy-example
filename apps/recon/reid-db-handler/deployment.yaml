@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reid-db-handler
+  namespace: recon
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reid-db-handler
+  template:
+    metadata:
+      labels:
+        app: reid-db-handler
+    spec:
+      containers:
+      - name: reid-db-handler
+        image: localhost:5000/reid-db-handler:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+        env:
+        - name: PORT
+          value: "3001"
+        - name: NODE_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: AUTO_MERGE_ENABLED
+          value: "true"
+        - name: AUTO_MERGE_THRESHOLD
+          value: "0.6"
+        - name: MERGE_WEBHOOK_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001/api/v1/webhooks/reid/merge"
+        envFrom:
+        - secretRef:
+            name: recon-secrets
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "128Mi"
+          limits:
+            memory: "512Mi"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-search-agent
+  namespace: ai
+spec:
+  selector:
+    app: web-search-agent
+  ports:
+  - port: 10004
+    targetPort: 10004

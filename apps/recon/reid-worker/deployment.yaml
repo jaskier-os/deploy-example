@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reid-worker
+  namespace: recon
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reid-worker
+  template:
+    metadata:
+      labels:
+        app: reid-worker
+    spec:
+      containers:
+      - name: reid-worker
+        image: localhost:5000/reid-worker:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9284
+        env:
+        - name: DB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: recon-secrets
+              key: API_KEY
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          cp /config/config.ini /app/config.ini
+          sed -i "s|REPLACE_AT_DEPLOY|${DB_API_KEY}|g" /app/config.ini
+          exec python main.py --mode server --host 0.0.0.0 --port 9284
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9284
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9284
+          initialDelaySeconds: 45
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "4000m"
+      volumes:
+      - name: config
+        configMap:
+          name: reid-worker-config

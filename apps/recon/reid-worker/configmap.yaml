@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reid-worker-config
+  namespace: recon
+data:
+  config.ini: |
+    [database]
+    enabled = true
+    api_url = http://reid-db-handler.recon.svc.cluster.local:3001
+    api_key = REPLACE_AT_DEPLOY
+    analytics_url = http://reid-analytics-backend.recon.svc.cluster.local:3400
+
+    [face_detection]
+    model = det_10g.onnx
+    confidence = 0.5
+    iou_threshold = 0.4
+
+    [face_recognition]
+    recognition_model = face-reidentification/weights/w600k_r50.onnx
+    similarity_threshold = 0.4
+    min_samples = 15
+
+    [person_tracking]
+    auto_merge_threshold = 0.85
+    merge_time_window = 10.0
+
+    [performance]
+    process_interval = 0.3
+    max_queue_size = 2
+
+    [sighting]
+    window_seconds = 5.0
+    max_gap_seconds = 2.0
+    min_sightings = 2
+
+    [face_3d]
+    enabled = true
+    model = deep3d_recon.onnx
+    device = cpu
+    output_format = glb
+    min_samples = 50
+    min_angle_bins = 3
+    yaw_bin_width = 30
+    refine_interval = 50
+
+    [anti_spoofing]
+    enabled = false
+
+    [system]
+    debug = false
+    log_level = INFO

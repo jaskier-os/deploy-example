@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: piper-tts
+  namespace: ai
+spec:
+  selector:
+    app: piper-tts
+  ports:
+  - port: 10013
+    targetPort: 10013

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocr
+  template:
+    metadata:
+      labels:
+        app: ocr
+    spec:
+      containers:
+      - name: ocr
+        image: localhost:5000/ocr:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10006
+        env:
+        - name: PORT
+          value: "10006"
+        - name: MODEL_ID
+          value: "lightonai/LightOnOCR-2-1B"
+        - name: DEVICE
+          value: "cpu"
+        - name: DTYPE
+          value: "float32"
+        - name: MAX_NEW_TOKENS
+          value: "4096"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 10006
+          failureThreshold: 24
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10006
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10006
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "512Mi"

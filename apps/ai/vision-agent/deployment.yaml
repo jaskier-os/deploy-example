@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vision-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vision-agent
+  template:
+    metadata:
+      labels:
+        app: vision-agent
+    spec:
+      containers:
+      - name: vision-agent
+        image: localhost:5000/vision-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10005
+        env:
+        - name: PORT
+          value: "10005"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: MCP_URL
+          value: "http://mcp-web-search.ai.svc.cluster.local:10002"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: MODEL
+          value: "sonnet"
+        - name: OCR_URL
+          value: "http://ocr.ai.svc.cluster.local:10006"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        resources:
+          requests:
+            memory: "128Mi"

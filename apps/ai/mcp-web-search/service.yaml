@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-web-search
+  namespace: ai
+spec:
+  selector:
+    app: mcp-web-search
+  ports:
+  - port: 10002
+    targetPort: 10002

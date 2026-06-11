@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reid-db-handler
+  namespace: recon
+spec:
+  selector:
+    app: reid-db-handler
+  ports:
+  - port: 3001
+    targetPort: 3001

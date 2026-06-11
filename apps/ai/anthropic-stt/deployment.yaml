@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anthropic-stt
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anthropic-stt
+  template:
+    metadata:
+      labels:
+        app: anthropic-stt
+    spec:
+      volumes:
+      - name: claude-credentials
+        hostPath:
+          path: /root/.claude
+          type: Directory
+      containers:
+      - name: anthropic-stt
+        image: localhost:5000/anthropic-stt:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10016
+        volumeMounts:
+        - name: claude-credentials
+          mountPath: /root/.claude
+          readOnly: true
+        env:
+        - name: PORT
+          value: "10016"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10016
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10016
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "64Mi"
+          limits:
+            memory: "256Mi"

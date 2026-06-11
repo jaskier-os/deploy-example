@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: translator
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: translator
+  template:
+    metadata:
+      labels:
+        app: translator
+    spec:
+      containers:
+      - name: translator
+        image: localhost:5000/translator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10015
+        env:
+        - name: PORT
+          value: "10015"
+        - name: MODEL_DIR
+          value: "./models"
+        - name: MODEL_NAME
+          value: "nllb-200-distilled-600M"
+        - name: DEVICE
+          value: "cpu"
+        - name: BEAM_SIZE
+          value: "1"
+        - name: MAX_INPUT_LENGTH
+          value: "512"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 10015
+          failureThreshold: 24
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10015
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10015
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "4Gi"
+          limits:
+            memory: "6Gi"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kokoro-tts
+  namespace: ai
+spec:
+  selector:
+    app: kokoro-tts
+  ports:
+  - port: 10007
+    targetPort: 8880

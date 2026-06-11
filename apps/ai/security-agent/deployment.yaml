@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: security-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: security-agent
+  template:
+    metadata:
+      labels:
+        app: security-agent
+    spec:
+      containers:
+      - name: security-agent
+        image: localhost:5000/security-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10009
+        env:
+        - name: PORT
+          value: "10009"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: MODEL
+          value: "sonnet"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+          limits:
+            memory: "512Mi"

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teratts-tts
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teratts-tts
+  template:
+    metadata:
+      labels:
+        app: teratts-tts
+    spec:
+      containers:
+      - name: teratts-tts
+        image: localhost:5000/teratts-tts:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10018
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10018
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10018
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "1Gi"
+          limits:
+            memory: "4Gi"

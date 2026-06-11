@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reid-analytics-backend
+  namespace: recon
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reid-analytics-backend
+  template:
+    metadata:
+      labels:
+        app: reid-analytics-backend
+    spec:
+      containers:
+      - name: reid-analytics-backend
+        image: localhost:5000/reid-analytics-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3400
+        env:
+        - name: PORT
+          value: "3400"
+        - name: NODE_ENV
+          value: "production"
+        - name: MONGO_URI
+          value: "mongodb://mongodb-0.mongodb.recon.svc.cluster.local:27017/reid-analytics?replicaSet=rs0"
+        - name: TRAITS_API_URL
+          value: "http://reid-db-handler.recon.svc.cluster.local:3001"
+        - name: TRAITS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: recon-secrets
+              key: API_KEY
+        - name: REID_WORKER_URL
+          value: "http://reid-worker.recon.svc.cluster.local:9284"
+        - name: BASE_URL
+          value: "https://GITLAB_HOST:8443/reid-analytics"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: CORS_ORIGINS
+          value: "https://GITLAB_HOST:8443"
+        - name: Y_WEBSOCKET_PORT
+          value: "3404"
+        - name: PORT_TLDRAW_SOCKET
+          value: "3403"
+        - name: AUTO_SAVE_INTERVAL_LAYERS
+          value: "30000"
+        envFrom:
+        - secretRef:
+            name: recon-secrets
+        readinessProbe:
+          tcpSocket:
+            port: 3400
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 3400
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "1Gi"

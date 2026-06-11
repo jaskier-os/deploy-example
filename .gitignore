@@ -1,0 +1,10 @@
+# Never commit real secrets. Only the *.yaml.example placeholders belong here.
+infrastructure/secrets/*.yaml
+!infrastructure/secrets/*.yaml.example
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+kubeconfig
+.env

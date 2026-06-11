@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piper-tts
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: piper-tts
+  template:
+    metadata:
+      labels:
+        app: piper-tts
+    spec:
+      containers:
+      - name: piper-tts
+        image: localhost:5000/piper-tts:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10013
+        env:
+        - name: PORT
+          value: "10013"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 10013
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 10013
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "512Mi"

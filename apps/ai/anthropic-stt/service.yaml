@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: anthropic-stt
+  namespace: ai
+spec:
+  selector:
+    app: anthropic-stt
+  ports:
+  - port: 10016
+    targetPort: 10016

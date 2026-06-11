@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+      - name: orchestrator
+        image: localhost:5000/orchestrator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10001
+        env:
+        - name: PORT
+          value: "10001"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: LLM_MODEL
+          value: "sonnet"
+        - name: TTS_URL
+          value: "http://kokoro-tts.ai.svc.cluster.local:10007"
+        - name: TRANSCRIBER_URL
+          value: "http://RECON_HOST:10003"
+        - name: TRANSCRIBER_WS_URL
+          value: "ws://RECON_HOST:10003/ws/stream"
+        - name: ANTHROPIC_STT_URL
+          value: "http://anthropic-stt.ai.svc.cluster.local:10016"
+        - name: TRANSLATOR_URL
+          value: "http://translator.ai.svc.cluster.local:10015"
+        - name: REID_ANALYTICS_URL
+          value: "http://reid-analytics-backend.recon.svc.cluster.local:3400"
+        - name: SESSION_TIMEOUT_MS
+          value: "600000"
+        - name: RC_SESSION_TIMEOUT_MS
+          value: "43200000"
+        - name: PIPER_TTS_URL
+          value: "http://teratts-tts.ai.svc.cluster.local:10018"
+        - name: MONGO_URL
+          value: "mongodb://mongodb-0.mongodb.recon.svc.cluster.local:27017/orchestrator?replicaSet=rs0"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 10001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 10001
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        volumeMounts:
+        - name: chat-data
+          mountPath: /app/data
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "1Gi"
+      volumes:
+      - name: chat-data
+        hostPath:
+          path: /opt/data/orchestrator
+          type: DirectoryOrCreate

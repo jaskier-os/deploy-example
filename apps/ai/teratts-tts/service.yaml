@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: teratts-tts
+  namespace: ai
+spec:
+  selector:
+    app: teratts-tts
+  ports:
+  - port: 10018
+    targetPort: 10018

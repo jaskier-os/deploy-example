@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup
+  namespace: recon
+spec:
+  schedule: "0 3 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: mongo:7
+            command:
+            - /bin/bash
+            - -c
+            - |
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              mongodump --uri="mongodb://mongodb-0.mongodb.recon.svc.cluster.local:27017/repository_reid?replicaSet=rs0" \
+                --archive=/backups/reid_${TIMESTAMP}.gz --gzip
+              ls -t /backups/reid_*.gz | tail -n +8 | xargs -r rm
+              echo "Backup complete: reid_${TIMESTAMP}.gz"
+            volumeMounts:
+            - name: backup-volume
+              mountPath: /backups
+          volumes:
+          - name: backup-volume
+            hostPath:
+              path: /opt/backups/mongodb
+              type: DirectoryOrCreate
+          restartPolicy: OnFailure

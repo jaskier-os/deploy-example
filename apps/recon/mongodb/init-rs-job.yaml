@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-init-rs
+  namespace: recon
+spec:
+  template:
+    spec:
+      containers:
+      - name: init-rs
+        image: mongo:7
+        command:
+        - mongosh
+        - --host
+        - mongodb-0.mongodb.recon.svc.cluster.local
+        - --eval
+        - |
+          try {
+            rs.status();
+            print("Replica set already initialized");
+          } catch(e) {
+            rs.initiate({
+              _id: "rs0",
+              members: [{_id: 0, host: "mongodb-0.mongodb.recon.svc.cluster.local:27017"}]
+            });
+            print("Replica set initiated");
+          }
+      restartPolicy: OnFailure
+  backoffLimit: 10

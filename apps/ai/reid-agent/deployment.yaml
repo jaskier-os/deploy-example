@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reid-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reid-agent
+  template:
+    metadata:
+      labels:
+        app: reid-agent
+    spec:
+      containers:
+      - name: reid-agent
+        image: localhost:5000/reid-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10011
+        env:
+        - name: PORT
+          value: "10011"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: REID_WORKER_URL
+          value: "http://RECON_HOST:9284"
+        - name: REID_ANALYTICS_URL
+          value: "http://reid-analytics-backend.recon.svc.cluster.local:3400"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        resources:
+          requests:
+            memory: "128Mi"

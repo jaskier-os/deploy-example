@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickup-agent
+  namespace: ai
+spec:
+  revisionHistoryLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickup-agent
+  template:
+    metadata:
+      labels:
+        app: clickup-agent
+    spec:
+      containers:
+      - name: clickup-agent
+        image: localhost:5000/clickup-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10012
+        env:
+        - name: PORT
+          value: "10012"
+        - name: ORCHESTRATOR_URL
+          value: "http://orchestrator.ai.svc.cluster.local:10001"
+        - name: COMMUNICATOR_URL
+          value: "http://communicator.ai.svc.cluster.local:10000"
+        - name: MODEL
+          value: "sonnet"
+        - name: MCP_PORT
+          value: "10016"
+        - name: MCP_URL
+          value: "http://localhost:10016"
+        envFrom:
+        - secretRef:
+            name: ai-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+          limits:
+            memory: "512Mi"

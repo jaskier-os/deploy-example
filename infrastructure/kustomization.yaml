@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Secrets are intentionally NOT listed here. Create them from the *.example files
+# in secrets/ (copy to .yaml and fill in, or `kubectl create secret`) before
+# applying the apps. The example files are not applied by kustomize.
+resources:
+  - namespaces.yaml
+  - tls/ca-issuer.yaml
+  - tls/server-cert.yaml
+  - backup/mongodb-cronjob.yaml
